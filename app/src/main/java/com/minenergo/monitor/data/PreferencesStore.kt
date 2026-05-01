@@ -122,6 +122,10 @@ class PreferencesStore(context: Context) {
         url = Config.DEFAULT_SITE_URL,
         dateFromIso = Config.DEFAULT_DATE_FROM.toString(),
         enabled = true,
+        sourceType = SourceType.MINENERGO_API,
+        apiCode = "pao_rosseti_tsentr_i_privolzhe",
+        // 647 — раздел "Информация о проектах ИПР..."
+        apiSectionIds = listOf(647L),
     )
 
     companion object {

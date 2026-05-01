@@ -7,7 +7,7 @@ import com.minenergo.monitor.data.Document
 import com.minenergo.monitor.data.DocumentFilter
 import com.minenergo.monitor.data.PreferencesStore
 import com.minenergo.monitor.log.AppLogger
-import com.minenergo.monitor.network.GenericSiteParser
+import com.minenergo.monitor.network.SiteParser
 import com.minenergo.monitor.notification.NotificationHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -50,7 +50,7 @@ class CheckWorker(context: Context, params: WorkerParameters) :
         for (site in sites) {
             try {
                 AppLogger.i(tag, "Проверка ${site.name} (${site.url})")
-                combined += GenericSiteParser.findDocuments(site)
+                combined += SiteParser.findDocuments(site)
             } catch (e: Throwable) {
                 anyError = true
                 AppLogger.e(tag, "Ошибка проверки ${site.name}: ${e.message}", e)

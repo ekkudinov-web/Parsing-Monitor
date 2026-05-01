@@ -12,7 +12,8 @@ import com.minenergo.monitor.data.ScheduleConfig
 import com.minenergo.monitor.data.SiteConfig
 import com.minenergo.monitor.log.AppLogger
 import com.minenergo.monitor.network.DocumentDownloader
-import com.minenergo.monitor.network.GenericSiteParser
+import com.minenergo.monitor.network.MinenergoApiParser
+import com.minenergo.monitor.network.SiteParser
 import com.minenergo.monitor.notification.NotificationHelper
 import com.minenergo.monitor.worker.WorkScheduler
 import kotlinx.coroutines.Dispatchers
@@ -97,7 +98,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             withContext(Dispatchers.IO) {
                 for (site in activeSites) {
                     try {
-                        combined += GenericSiteParser.findDocuments(site)
+                        combined += SiteParser.findDocuments(site)
                     } catch (e: Throwable) {
                         AppLogger.e("UI", "Ошибка проверки ${site.name}: ${e.message}", e)
                         errors += "${site.name}: ${e.message ?: "ошибка"}"
@@ -140,7 +141,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val current = _state.value
         if (current.selectedUrls.isEmpty() || current.isDownloading) return
         val toDownload = current.allDocuments.filter { it.url in current.selectedUrls }
-        val allowedHosts = current.sites.mapNotNull { DocumentDownloader.hostOf(it.url) }.toSet()
+        val allowedHosts = buildSet {
+            current.sites.forEach { site ->
+                DocumentDownloader.hostOf(site.url)?.let { add(it) }
+                if (site.sourceType == com.minenergo.monitor.data.SourceType.MINENERGO_API) {
+                    add(MinenergoApiParser.BASE_HOST)
+                }
+            }
+        }
         _state.update { it.copy(isDownloading = true, downloadResults = emptyList()) }
 
         viewModelScope.launch {

@@ -165,7 +165,11 @@ private fun SiteCard(
             )
             val date = runCatching { LocalDate.parse(site.dateFromIso).format(humanDate) }
                 .getOrDefault(site.dateFromIso)
-            Text("С даты: $date", style = MaterialTheme.typography.labelSmall)
+            val sourceLabel = when (site.sourceType) {
+                com.minenergo.monitor.data.SourceType.MINENERGO_API -> "API Минэнерго"
+                com.minenergo.monitor.data.SourceType.UNIVERSAL_HTML -> "HTML-парсер"
+            }
+            Text("Тип: $sourceLabel  •  С даты: $date", style = MaterialTheme.typography.labelSmall)
             val tweaks = listOfNotNull(
                 site.linkSelector?.let { "selector" },
                 site.dateRegex?.let { "regex даты" },
