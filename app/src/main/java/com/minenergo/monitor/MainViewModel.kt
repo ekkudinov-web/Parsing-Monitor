@@ -213,13 +213,29 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun updateSchedule(schedule: ScheduleConfig) {
         store.saveSchedule(schedule)
         _state.update { it.copy(schedule = schedule) }
-        WorkScheduler.applyFromPreferences(getApplication())
+        WorkScheduler.applyFromPreferences(getApplication(), forceRestart = true)
     }
 
     fun setAutoCheckEnabled(enabled: Boolean) {
         store.setAutoCheckEnabled(enabled)
         _state.update { it.copy(autoCheckEnabled = enabled) }
-        WorkScheduler.applyFromPreferences(getApplication())
+        WorkScheduler.applyFromPreferences(getApplication(), forceRestart = true)
+    }
+
+    /**
+     * Принудительный перезапуск расписания. Используется как
+     * "красная кнопка" в Диагностике, если пользователь жалуется,
+     * что фоновая проверка не срабатывает.
+     */
+    fun restartSchedule() {
+        WorkScheduler.applyFromPreferences(getApplication(), forceRestart = true)
+        _state.update { it.copy(toast = "Расписание перезапущено") }
+    }
+
+    /** Тестовый запуск воркера через 1 минуту — для диагностики Samsung. */
+    fun scheduleDelayedTest() {
+        WorkScheduler.scheduleDelayedTest(getApplication())
+        _state.update { it.copy(toast = "Тест запланирован — проверка через 1 минуту") }
     }
 
     // ===== UI helpers =====

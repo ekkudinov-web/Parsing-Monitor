@@ -54,6 +54,7 @@ object Config {
     const val NOTIFICATION_CHANNEL_NAME: String = "Уведомления о документах"
     const val NOTIFICATION_ID_NEW_DOCS: Int = 1001
     const val WORK_NAME: String = "minenergo_periodic_check"
+    const val WORK_NAME_TEST: String = "minenergo_test_check"
 
     const val DOWNLOADS_SUBDIR: String = "downloads"
     const val LOGS_SUBDIR: String = "logs"

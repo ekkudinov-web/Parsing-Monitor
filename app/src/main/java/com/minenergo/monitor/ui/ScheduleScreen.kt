@@ -19,6 +19,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -47,6 +48,9 @@ fun ScheduleScreen(
     autoCheckEnabled: Boolean,
     onAutoCheckChange: (Boolean) -> Unit,
     onScheduleChange: (ScheduleConfig) -> Unit,
+    onTestRunDelayed: () -> Unit,
+    onRestartSchedule: () -> Unit,
+    onOpenLogs: () -> Unit,
 ) {
     val (initialUnit, initialValue) = pickUnit(schedule.intervalMinutes)
     var unit by remember(schedule) { mutableStateOf(initialUnit) }
@@ -229,6 +233,43 @@ fun ScheduleScreen(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text("Сохранить расписание")
+        }
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        ) {
+            Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Диагностика", fontWeight = FontWeight.SemiBold)
+                Text(
+                    "Версия приложения: ${com.minenergo.monitor.BuildConfig.VERSION_NAME} " +
+                        "(сборка ${com.minenergo.monitor.BuildConfig.VERSION_CODE})",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.outline,
+                )
+                Text(
+                    "Если автоматические проверки не запускаются, нажмите «Тест» — " +
+                        "приложение запланирует разовый запуск через минуту. Если " +
+                        "и он не сработает, проблема в системных ограничениях " +
+                        "Android (чаще всего на Samsung). «Перезапустить» сбрасывает " +
+                        "таймер периодической задачи с нуля. «Логи» показывает, " +
+                        "что именно происходит.",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.outline,
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(onClick = onTestRunDelayed, modifier = Modifier.weight(1f)) {
+                        Text("Тест через 1 мин")
+                    }
+                    OutlinedButton(onClick = onRestartSchedule, modifier = Modifier.weight(1f)) {
+                        Text("Перезапустить")
+                    }
+                }
+                OutlinedButton(onClick = onOpenLogs, modifier = Modifier.fillMaxWidth()) {
+                    Text("Логи")
+                }
+            }
         }
     }
 }

@@ -20,6 +20,7 @@ class CheckWorker(context: Context, params: WorkerParameters) :
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         val tag = "Worker"
+        AppLogger.i(tag, "=== Воркер запущен системой (id=${id}) ===")
         val store = PreferencesStore(applicationContext)
         if (!store.isAutoCheckEnabled()) {
             AppLogger.i(tag, "Автопроверка выключена — пропуск")

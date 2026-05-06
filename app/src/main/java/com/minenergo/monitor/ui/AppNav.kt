@@ -45,6 +45,7 @@ fun AppNav(viewModel: MainViewModel) {
     var currentTab by remember { mutableStateOf(Tab.Documents) }
     val snackbarHostState = remember { SnackbarHostState() }
     var editingSiteId by remember { mutableStateOf<String?>(null) }
+    var showLogs by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.toast) {
         state.toast?.let { msg ->
@@ -72,8 +73,8 @@ fun AppNav(viewModel: MainViewModel) {
             )
         },
         bottomBar = {
-            // Если открыт редактор сайта — bottom-bar скрываем.
-            if (editingSiteId == null) {
+            // Если открыт редактор сайта или экран логов — bottom-bar скрываем.
+            if (editingSiteId == null && !showLogs) {
                 NavigationBar {
                     Tab.values().forEach { tab ->
                         NavigationBarItem(
@@ -90,48 +91,55 @@ fun AppNav(viewModel: MainViewModel) {
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
             val editing = editingSiteId
-            if (editing != null) {
-                val draft = state.sites.firstOrNull { it.id == editing }
-                    ?: viewModel.makeNewSiteDraft().copy(id = editing)
-                SiteEditorScreen(
-                    initial = draft,
-                    onSave = { saved ->
-                        viewModel.upsertSite(saved)
-                        editingSiteId = null
-                    },
-                    onCancel = { editingSiteId = null },
-                )
-            } else when (currentTab) {
-                Tab.Documents -> DocumentsScreen(
-                    state = state,
-                    onCheckNow = viewModel::checkNow,
-                    onToggle = viewModel::toggleSelected,
-                    onSelectAll = viewModel::selectAllVisible,
-                    onClearSelection = viewModel::clearSelection,
-                    onDownload = viewModel::downloadSelected,
-                    onDismissResults = viewModel::clearDownloadResults,
-                    onAutoCheckChange = viewModel::setAutoCheckEnabled,
-                )
-                Tab.Sites -> SitesScreen(
-                    sites = state.sites,
-                    onAdd = {
-                        val draft = viewModel.makeNewSiteDraft()
-                        editingSiteId = draft.id
-                    },
-                    onEdit = { editingSiteId = it.id },
-                    onToggleEnabled = viewModel::toggleSiteEnabled,
-                    onDelete = viewModel::deleteSite,
-                )
-                Tab.Filter -> FilterScreen(
-                    filter = state.globalFilter,
-                    onChange = viewModel::updateGlobalFilter,
-                )
-                Tab.Schedule -> ScheduleScreen(
-                    schedule = state.schedule,
-                    autoCheckEnabled = state.autoCheckEnabled,
-                    onAutoCheckChange = viewModel::setAutoCheckEnabled,
-                    onScheduleChange = viewModel::updateSchedule,
-                )
+            when {
+                showLogs -> LogScreen(onBack = { showLogs = false })
+                editing != null -> {
+                    val draft = state.sites.firstOrNull { it.id == editing }
+                        ?: viewModel.makeNewSiteDraft().copy(id = editing)
+                    SiteEditorScreen(
+                        initial = draft,
+                        onSave = { saved ->
+                            viewModel.upsertSite(saved)
+                            editingSiteId = null
+                        },
+                        onCancel = { editingSiteId = null },
+                    )
+                }
+                else -> when (currentTab) {
+                    Tab.Documents -> DocumentsScreen(
+                        state = state,
+                        onCheckNow = viewModel::checkNow,
+                        onToggle = viewModel::toggleSelected,
+                        onSelectAll = viewModel::selectAllVisible,
+                        onClearSelection = viewModel::clearSelection,
+                        onDownload = viewModel::downloadSelected,
+                        onDismissResults = viewModel::clearDownloadResults,
+                        onAutoCheckChange = viewModel::setAutoCheckEnabled,
+                    )
+                    Tab.Sites -> SitesScreen(
+                        sites = state.sites,
+                        onAdd = {
+                            val draft = viewModel.makeNewSiteDraft()
+                            editingSiteId = draft.id
+                        },
+                        onEdit = { editingSiteId = it.id },
+                        onToggleEnabled = viewModel::toggleSiteEnabled,
+                        onDelete = viewModel::deleteSite,
+                    )
+                    Tab.Filter -> FilterScreen(
+                        filter = state.globalFilter,
+                        onChange = viewModel::updateGlobalFilter,
+                    )
+                    Tab.Schedule -> ScheduleScreen(
+                        schedule = state.schedule,
+                        autoCheckEnabled = state.autoCheckEnabled,
+                        onAutoCheckChange = viewModel::setAutoCheckEnabled,
+                        onScheduleChange = viewModel::updateSchedule,
+                        onTestRunDelayed = viewModel::scheduleDelayedTest,
+                        onRestartSchedule = viewModel::restartSchedule,
+                        onOpenLogs = { showLogs = true },
+                    )
+                }
             }
         }
     }
